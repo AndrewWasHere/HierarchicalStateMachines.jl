@@ -10,21 +10,21 @@ end
 Handle Event tests state machine.
 """
 mutable struct TestUnhandledEventMachine <: HSM.AbstractHsmState
-    parent::Union{HSM.AbstractHsmState, Nothing}
+    parent_state::Union{HSM.AbstractHsmState, Nothing}
     active_state::Union{HSM.AbstractHsmState, Nothing}
     handled_event::Bool
     
-    function TestUnhandledEventMachine(parent, active_state, handled_event)
+    function TestUnhandledEventMachine(parent_state, active_state, handled_event)
         if !isnothing(active_state) 
-            error("Active state must be `nothing`.")
+            error("active_state must be `nothing`.")
         elseif handled_event
             error("handled_event must be `false`.")
         end
-        new(parent, active_state, handled_event)
+        new(parent_state, active_state, handled_event)
     end
 end
 
-TestUnhandledEventMachine(parent) = TestUnhandledEventMachine(parent, nothing, false)
+TestUnhandledEventMachine(parent_state) = TestUnhandledEventMachine(parent_state, nothing, false)
 
 # TestUnhandledEventMachineState event handlers.
 # This test deliberately does not handle all events in the root machine state.
