@@ -94,5 +94,14 @@ end
 end
 
 @testset "handle_event() -- Parent state handler called when child does not handle event" begin
+    machine = TestParentChildEventHandlingMachine(nothing)
+    child = TestParentChildEventHandlingChild(machine)
+    HSM.transition_to_state(machine, child)
+
+    HSM.handle_event(child, ChildUnhandledEvent())
+    @test machine.handled_child_handled_event == false
+    @test machine.handled_child_unhandled_event == true
+    @test child.handled_child_handled_event == false
+    @test child.handled_child_unhandled_event == false
     
 end
