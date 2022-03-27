@@ -39,7 +39,7 @@ Global event handler.
 This one gets called as a last resort.
 """
 function on_event(state::AbstractHsmState, event::AbstractHsmEvent)
-    @warn "on_event(AbstractHsmState, AbstractHsmEvent)"
+    @debug "on_event(AbstractHsmState, AbstractHsmEvent)"
     return false
 end
 
@@ -67,14 +67,14 @@ end
 Pass event to state machine for processing.
 """
 function handle_event(state_machine::AbstractHsmState, event::AbstractHsmEvent)
+    @debug "handle_event(" * string(typeof(state_machine)) * ", " * string(typeof(event)) * ")"
     handled::Bool = false
 
     s = active_state(state_machine)
-    @warn "state: " * string(typeof(s)) * ", event: " * string(typeof(event))
     while !isnothing(s) && !(handled = on_event(s, event))
         # Event not handled by current state. Try the parent.
         s = s.parent
-        @warn "state: " * string(typeof(s)) * ", event: " * string(typeof(event))
+        @debug "state: " * string(typeof(s)) * ", event: " * string(typeof(event))
     end
 
     if !handled 

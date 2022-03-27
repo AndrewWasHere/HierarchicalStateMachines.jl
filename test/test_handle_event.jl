@@ -32,7 +32,7 @@ HandleEventMachine(parent) = HandleEventMachine(parent, nothing, false)
 # for all possible state machine events, otherwise the machine may raise an
 # exception, and end up in an unexpected state.
 function HSM.on_event(state::HandleEventMachine, event::HandledEvent)
-    @warn "on_event(HandleEventMachine, HandledEvent)"
+    @debug "on_event(HandleEventMachine, HandledEvent)"
     state.handled_event = true
     return true
 end
