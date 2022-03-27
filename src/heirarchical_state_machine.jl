@@ -81,7 +81,7 @@ end
 function root_state(current_state::AbstractHsmState)
     s = current_state
     while !isnothing(s.parent_state)
-        s = s.parent
+        s = s.parent_state
     end
     return s
 end
