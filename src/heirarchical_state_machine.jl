@@ -42,8 +42,8 @@ well.
 This one gets called as a last resort, and is expected to return `false` to 
 propagate the event up parent state machine states.
 """
-function on_event(state::AbstractHsmState, event::AbstractHsmEvent)
-    @debug "on_event(AbstractHsmState, AbstractHsmEvent)"
+function on_event!(state::AbstractHsmState, event::AbstractHsmEvent)
+    @debug "on_event!(AbstractHsmState, AbstractHsmEvent)"
     return false
 end
 
@@ -51,8 +51,8 @@ end
 Global state entry handler.
 This is the default behavior of a state.
 """
-function on_entry(state::AbstractHsmState)
-    @debug "on_entry(AbstractHsmState)"
+function on_entry!(state::AbstractHsmState)
+    @debug "on_entry!(AbstractHsmState)"
     # do nothing.
 end
 
@@ -60,8 +60,8 @@ end
 Global state exit handler.
 This is the default behavior of a state.
 """
-function on_exit(state::AbstractHsmState)
-    @debug "on_exit(AbstractHsmState)"
+function on_exit!(state::AbstractHsmState)
+    @debug "on_exit!(AbstractHsmState)"
     # do nothing.
 end
 
@@ -69,8 +69,8 @@ end
 Global state initializer.
 This is the default behavior of a state.
 """
-function on_initialize(state::AbstractHsmState)
-    @debug "on_initialize(AbstractHsmState)"
+function on_initialize!(state::AbstractHsmState)
+    @debug "on_initialize!(AbstractHsmState)"
     # Do nothing.
 end
 
@@ -116,6 +116,7 @@ function common_parent(left_state::AbstractHsmState, right_state::AbstractHsmSta
                 # Common parent found.
                 return r
             end
+
             r = r.parent_state
         end
 
@@ -133,12 +134,13 @@ end
 """
 Pass event to state machine for processing.
 """
-function handle_event(state_machine::AbstractHsmState, event::AbstractHsmEvent)
-    @debug "handle_event($(string(typeof(state_machine))), $(string(typeof(event))))"
-    handled::Bool = false
+function handle_event!(state_machine::AbstractHsmState, event::AbstractHsmEvent)
+    @debug "handle_event!($(string(typeof(state_machine))), $(string(typeof(event))))"
+    
+    handled = false
 
     s = active_state(state_machine)
-    while !isnothing(s) && !(handled = on_event(s, event))
+    while !isnothing(s) && !(handled = on_event!(s, event))
         # Event not handled by current state. Try the parent.
         s = s.parent_state
     end
@@ -154,8 +156,8 @@ end
 """
 Change the active state of the state machine.
 """
-function transition_to_state(machine::AbstractHsmState, state::AbstractHsmState)
-    @debug "transition_to_state($(string(typeof(machine))), $(string(typeof(state))))"
+function transition_to_state!(machine::AbstractHsmState, state::AbstractHsmState)
+    @debug "transition_to_state!($(string(typeof(machine))), $(string(typeof(state))))"
     
     s = active_state(machine)
     cp = common_parent(s, state)
@@ -173,11 +175,12 @@ function transition_to_state(machine::AbstractHsmState, state::AbstractHsmState)
 
     # Call `on_exit()` from active state to common parent.
     while s != cp.parent_state
-        on_exit(s)
+        on_exit!(s)
         s = s.parent_state
     end
 
     # Update active state pointers from common parent to `state`.
+    state.active_state = nothing
     s = state
     while s != cp
         s.parent_state.active_state = s
@@ -187,9 +190,32 @@ function transition_to_state(machine::AbstractHsmState, state::AbstractHsmState)
     # Call `on_entry()` for common parent's active state to `state`.
     s = cp.active_state
     while !isnothing(s)
-        on_entry(s)
+        on_entry!(s)
         s = s.active_state
     end
 
-    on_initialize(state)
+    on_initialize!(state)
+end
+
+"""
+Change the active state of the state machine, following the `active_state` of
+`state` as much as one layer.
+"""
+function transition_to_shallow_history!(machine::AbstractHsmState, state::AbstractHsmState)
+    @debug "transition_to_shallow_history!($(string(typeof(machine))), $(string(typeof(state))))"
+
+    s = isnothing(state.active_state) ? state : state.active_state
+    transition_to_state!(machine, s)
+end
+
+"""
+Change the active state of the state machine, following the `active_state` of
+`state` as far as it goes.
+"""
+function transition_to_deep_history!(machine::AbstractHsmState, state::AbstractHsmState)
+    s = state
+    while !isnothing(s.active_state)
+        s = s.active_state
+    end
+    transition_to_state!(machine, s)
 end

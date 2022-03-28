@@ -63,42 +63,42 @@ TestParentChildEventHandlingChild(parent_state) = TestParentChildEventHandlingCh
     parent_state, nothing, false, false
 )
 
-function HSM.on_event(state::TestParentChildEventHandlingMachine, event::ChildHandledEvent)
-    @debug "on_event(TestParentChildEventHandlingMachine, ChildHandledEvent)"
+function HSM.on_event!(state::TestParentChildEventHandlingMachine, event::ChildHandledEvent)
+    @debug "on_event!(TestParentChildEventHandlingMachine, ChildHandledEvent)"
     state.handled_child_handled_event = true
     return true
 end
 
-function HSM.on_event(state::TestParentChildEventHandlingMachine, event::ChildUnhandledEvent)
-    @debug "on_event(TestParentChildEventHandlingMachine, ChildUnhandledEvent)"
+function HSM.on_event!(state::TestParentChildEventHandlingMachine, event::ChildUnhandledEvent)
+    @debug "on_event!(TestParentChildEventHandlingMachine, ChildUnhandledEvent)"
     state.handled_child_unhandled_event = true
     return true
 end
 
-function HSM.on_event(state::TestParentChildEventHandlingChild, event::ChildHandledEvent)
-    @debug "on_event(TestParentChildEventHandlingMachine, ChildHandledEvent)"
+function HSM.on_event!(state::TestParentChildEventHandlingChild, event::ChildHandledEvent)
+    @debug "on_event!(TestParentChildEventHandlingMachine, ChildHandledEvent)"
     state.handled_child_handled_event = true
     return true
 end
 
-@testset "handle_event() -- Parent state handler not called when child handles event" begin
+@testset "handle_event!() -- Parent state handler not called when child handles event" begin
     machine = TestParentChildEventHandlingMachine(nothing)
     child = TestParentChildEventHandlingChild(machine)
-    HSM.transition_to_state(machine, child)
+    HSM.transition_to_state!(machine, child)
 
-    HSM.handle_event(child, ChildHandledEvent())
+    HSM.handle_event!(child, ChildHandledEvent())
     @test machine.handled_child_handled_event == false
     @test machine.handled_child_unhandled_event == false
     @test child.handled_child_handled_event == true
     @test child.handled_child_unhandled_event == false
 end
 
-@testset "handle_event() -- Parent state handler called when child does not handle event" begin
+@testset "handle_event!() -- Parent state handler called when child does not handle event" begin
     machine = TestParentChildEventHandlingMachine(nothing)
     child = TestParentChildEventHandlingChild(machine)
-    HSM.transition_to_state(machine, child)
+    HSM.transition_to_state!(machine, child)
 
-    HSM.handle_event(child, ChildUnhandledEvent())
+    HSM.handle_event!(child, ChildUnhandledEvent())
     @test machine.handled_child_handled_event == false
     @test machine.handled_child_unhandled_event == true
     @test child.handled_child_handled_event == false
