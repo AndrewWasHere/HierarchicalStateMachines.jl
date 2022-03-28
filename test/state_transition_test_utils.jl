@@ -6,7 +6,7 @@ macro transition_tests_state(name)
             parent_state::Union{HSM.AbstractHsmState, Nothing}
             active_state::Union{HSM.AbstractHsmState, Nothing}
 
-            function $name(parent_state, active_state)
+            function $name(parent_state, active_state=nothing)
                 if !isnothing(active_state)
                     error("active_state must be `nothing`")
                 end

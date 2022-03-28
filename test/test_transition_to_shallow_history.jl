@@ -17,19 +17,10 @@ using Logging, Test, HSM
 include("state_transition_test_utils.jl")
 
 @transition_tests_state TestShallowHistoryMachine
-TestShallowHistoryMachine(parent_state) = TestShallowHistoryMachine(parent_state, nothing)
-
 @transition_tests_state TestShallowHistoryStartState
-TestShallowHistoryStartState(parent_state) = TestShallowHistoryStartState(parent_state, nothing)
-
 @transition_tests_state TestShallowHistoryL1State
-TestShallowHistoryL1State(parent_state) = TestShallowHistoryL1State(parent_state, nothing)
-
 @transition_tests_state TestShallowHistoryL2State
-TestShallowHistoryL2State(parent_state) = TestShallowHistoryL2State(parent_state, nothing)
-
 @transition_tests_state TestShallowHistoryL3State
-TestShallowHistoryL3State(parent_state) = TestShallowHistoryL3State(parent_state, nothing)
 
 function build_shallow_history_machine()
     machine = TestShallowHistoryMachine(nothing)

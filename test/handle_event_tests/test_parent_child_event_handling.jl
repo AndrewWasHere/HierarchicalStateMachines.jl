@@ -31,9 +31,9 @@ macro test_parent_child_event_state(name)
 
             function $name(
                 parent_state, 
-                active_state, 
-                handled_child_handled_event, 
-                handled_child_unhandled_event
+                active_state=nothing, 
+                handled_child_handled_event=false, 
+                handled_child_unhandled_event=false
             )
                 if !isnothing(active_state)
                     error("active_state must be `nothing`")
@@ -54,14 +54,7 @@ macro test_parent_child_event_state(name)
 end
 
 @test_parent_child_event_state(TestParentChildEventHandlingMachine)
-TestParentChildEventHandlingMachine(parent_state) = TestParentChildEventHandlingMachine(
-    parent_state, nothing, false, false
-)
-
 @test_parent_child_event_state(TestParentChildEventHandlingChild)
-TestParentChildEventHandlingChild(parent_state) = TestParentChildEventHandlingChild(
-    parent_state, nothing, false, false
-)
 
 function HSM.on_event!(state::TestParentChildEventHandlingMachine, event::ChildHandledEvent)
     @debug "on_event!(TestParentChildEventHandlingMachine, ChildHandledEvent)"

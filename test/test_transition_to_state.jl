@@ -14,16 +14,9 @@ using Logging, Test, HSM
 include("state_transition_test_utils.jl")
 
 @transition_tests_state TransitionTestsMachine
-TransitionTestsMachine(parent_state) = TransitionTestsMachine(parent_state, nothing)
-
 @transition_tests_state TransitionTestsStateStart
-TransitionTestsStateStart(parent_state) = TransitionTestsStateStart(parent_state, nothing)
-
 @transition_tests_state TransitionTestsStateDest
-TransitionTestsStateDest(parent_state) = TransitionTestsStateDest(parent_state, nothing)
-
 @transition_tests_state TransitionTestsStateUnreachable
-TransitionTestsStateUnreachable(parent_state) = TransitionTestsStateUnreachable(parent_state, nothing)
 
 function build_state_machine()
     machine = TransitionTestsMachine(nothing)
