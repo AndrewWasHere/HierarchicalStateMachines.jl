@@ -101,8 +101,8 @@ function common_parent(left_state::AbstractHsmState, right_state::AbstractHsmSta
 
     if (
         left_state == right_state &&
-        isnothing(left_state.parent) &&
-        isnothing(right_state.parent)
+        isnothing(left_state.parent_state) &&
+        isnothing(right_state.parent_state)
     )
         # `left_state` and `right_state` are the root machine state.
         return left_state
