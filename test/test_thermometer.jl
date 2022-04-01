@@ -39,9 +39,9 @@ using Logging, Test, HSM
 # Temperature converter functions.
 #####
 
-celsius(t::Float64) = string(round(t, digits=1))
-farenheit(t::Float64) = string(round((t * 1.8) + 32.0, digits=1))
-kelvin(t::Float64) = string(round(t + 273.15, digits=1))
+celsius(t::Float64) = string(round(t, digits=1)) * "°C"
+farenheit(t::Float64) = string(round((t * 1.8) + 32.0, digits=1)) * "°F"
+kelvin(t::Float64) = string(round(t + 273.15, digits=1)) * "K"
 
 #####
 # Thermometer model.
@@ -257,17 +257,17 @@ end
 
     HSM.handle_event!(thermometer_state_machine, TemperatureEvent(0.0))
 
-    @test thermometer.display == "273.2"
+    @test thermometer.display == "273.2K"
 
     HSM.handle_event!(thermometer_state_machine, UnitsEvent())
 
     @test HSM.active_state(thermometer_state_machine) == celsius_state
-    @test thermometer.display == "0.0"
+    @test thermometer.display == "0.0°C"
 
     HSM.handle_event!(thermometer_state_machine, UnitsEvent())
 
     @test HSM.active_state(thermometer_state_machine) == farenheit_state
-    @test thermometer.display == "32.0"
+    @test thermometer.display == "32.0°F"
 
     HSM.handle_event!(thermometer_state_machine, PowerEvent())
 
@@ -279,5 +279,5 @@ end
     HSM.handle_event!(thermometer_state_machine, PowerEvent())
 
     @test HSM.active_state(thermometer_state_machine) == farenheit_state
-    @test thermometer.display == "32.0"
+    @test thermometer.display == "32.0°F"
 end
