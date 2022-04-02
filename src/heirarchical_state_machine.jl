@@ -2,6 +2,9 @@ using Logging
 
 """
 Unhandled event exception.
+
+This gets thrown if an event is not handled by the state machine when
+`handle_event!()` is called.
 """
 struct HsmUnhandledEventError <: Exception
     msg::String
@@ -9,17 +12,28 @@ end
 
 """
 State transition failed exception.
+
+This gets thrown if the destination state is not a part of the state machine
+when `transition_to_state!()` is called.
 """
 struct HsmStateTransitionError <: Exception
     msg::String
 end
 
 """
+    AbstractHsmEvent
+
+Abstract HSM event type.
+
 Concrete events must inherit `AbstractHsmEvent`.
 """
 abstract type AbstractHsmEvent end
 
 """
+    AbstractHsmState
+
+Abstract HSM state type.
+
 Concrete states must be mutable, inherit `AbstractHsmState`, and contain
 
 * `parent_state::AbstractHsmState` -- initialized to the parent state of the
@@ -33,14 +47,44 @@ abstract type AbstractHsmState end
 #####
 
 """
+    on_event!(state::AbstractHsmState, event::AbstractHsmEvent)
+
 Global event handler.
+
+Create event handlers for your derived states and events to handle those
+specific events in those states.
+
+```julia
+struct MyState <: HSM.AbstractHsmState ; end
+struct MyEvent <: HSM.AbstractHsmEvent ; end
+
+function on_event!(state::MyState, event::MyEvent)
+    # process event.
+    return true
+end
+```
 
 State-specific event handlers are expected to return `true` when they handle an
 event, unless they specifically want their parent state to process the event as
 well.
 
-This one gets called as a last resort, and is expected to return `false` to 
-propagate the event up parent state machine states.
+State-specific instances of `on_event!()` correspond to "event / action" labels
+in state blocks or on state transitions in UML state charts.
+
+```plantuml
+@startuml
+state ExampleMachine {
+    state MyState 
+    state MyOtherState
+
+    MyState --> MyOtherState : MyEvent / do something
+    MyOtherState : MyEvent / do something
+}
+@enduml
+```
+
+The global event handler is called as a last resort, and is expected to return 
+`false` to generate an `HsmUnhandledEventError`.
 """
 function on_event!(state::AbstractHsmState, event::AbstractHsmEvent)
     @debug "on_event!(AbstractHsmState, AbstractHsmEvent)"
@@ -48,8 +92,35 @@ function on_event!(state::AbstractHsmState, event::AbstractHsmEvent)
 end
 
 """
+    on_entry!(state::AbstractHsmState)
+
 Global state entry handler.
-This is the default behavior of a state.
+
+Create entry handlers for your derived states when you want that state to execute
+something whenever it is entered. This includes transitions to itself.
+
+```julia
+struct MyState <: HSM.AbstractHsmState ; end
+
+function on_entry!(state::MyState)
+    # do something.
+end
+```
+
+State-specific instances of `on_entry!()` correspond to "on entry / action"
+labels in state blocks in UML state charts.
+
+```plantuml
+@startuml
+state ExampleMachine {
+    state MyState
+    MyState : on entry / do something
+}
+@enduml
+```
+
+The global state entry handler is the default behavior of a state. It does not
+do anything.
 """
 function on_entry!(state::AbstractHsmState)
     @debug "on_entry!(AbstractHsmState)"
@@ -57,8 +128,35 @@ function on_entry!(state::AbstractHsmState)
 end
 
 """
+    on_entry!(state::AbstractHsmState)
+
 Global state exit handler.
-This is the default behavior of a state.
+
+Create exit handlers for your derived states when you want that state to execute
+something whenever it is exited. This includes transitions to itself.
+
+```julia
+struct MyState <: HSM.AbstractHsmState ; end
+
+function on_exit!(state::MyState)
+    # do something.
+end
+```
+
+State-specific instances of `on_exit!()` correspond to "on exit / action"
+labels in state blocks in UML state charts.
+
+```plantuml
+@startuml
+state ExampleMachine {
+    state MyState
+    MyState : on exit / do something
+}
+@enduml
+```
+
+The global state exit handler is the default behavior of a state. It does not do 
+anything.
 """
 function on_exit!(state::AbstractHsmState)
     @debug "on_exit!(AbstractHsmState)"
@@ -66,8 +164,38 @@ function on_exit!(state::AbstractHsmState)
 end
 
 """
+    on_initialize!(state::AbstractHsmEvent)
+
 Global state initializer.
-This is the default behavior of a state.
+
+Create initialiers for states that must be initialized upon entry. Generally,
+this is used when a state has sub-states, where one must be transitioned to
+when the state is entered. For example, the root state machine.
+
+```julia
+struct ExampleMachine <: HSM.AbstractHsmState ; end
+struct MyState <: HSM.AbstractHsmState ; end
+
+function on_initialize!(state::ExampleMachine)
+    transition_to_state!(my_state)
+end
+```
+
+State-specific instances of `on_initialize!()` correspond to the starting point 
+trasitions in UML state charts.
+
+```plantuml
+@startuml
+state Machine {
+    state MyState
+
+    [*] --> MyState
+}
+@enduml
+```
+
+The global state initializer is the default behavior of a state. It does not do 
+anything.
 """
 function on_initialize!(state::AbstractHsmState)
     @debug "on_initialize!(AbstractHsmState)"
@@ -132,7 +260,12 @@ end
 #####
 
 """
-Pass event to state machine for processing.
+    handle_event!(state_machine::AbstractHsmState, event::AbstractHsmEvent)
+
+Pass `event` to `state_machine` for processing.
+
+This is the public interface to use to pass an event to a state machine for
+processing.
 """
 function handle_event!(state_machine::AbstractHsmState, event::AbstractHsmEvent)
     @debug "handle_event!($(string(typeof(state_machine))), $(string(typeof(event))))"
@@ -154,7 +287,42 @@ function handle_event!(state_machine::AbstractHsmState, event::AbstractHsmEvent)
 end
 
 """
-Change the active state of the state machine.
+    transition_to_state!(machine::AbstractHsmState, state::AbstractHsmState)
+
+Change the active state of `state_machine` to `state`.
+
+This is the interface to use in a state's event handler (`on_event!()`, 
+`on_initialize()`) to transition states.
+
+```julia
+struct Machine <: HSM.AbstractHsmState ; end
+struct MyState <: HSM.AbstractHsmState ; end
+struct MyOtherState <: HSM.AbstractHsmState ; end
+struct MyEvent <: HSM.AbstractHsmEvent ; end
+
+machine = Machine(nothing)
+my_state = MyState(machine)
+my_other_state = MyOtherState(machine)
+
+function on_event!(state::MyState, event::MyEvent)
+    # Active state becomes my_other_state.
+    transition_to_state!(machine, my_other_state)
+end
+```
+
+This interface corresponds to arrows from one state to another in a UML state
+chart.
+
+```plantuml
+@startuml
+state Machine {
+    state MyState
+    state MyOtherState
+
+    MyState --> MyOtherState
+}
+@enduml
+```
 """
 function transition_to_state!(machine::AbstractHsmState, state::AbstractHsmState)
     @debug "transition_to_state!($(string(typeof(machine))), $(string(typeof(state))))"
@@ -198,8 +366,50 @@ function transition_to_state!(machine::AbstractHsmState, state::AbstractHsmState
 end
 
 """
-Change the active state of the state machine, following the `active_state` of
+    transition_to_shallow_history(machine::AbstractHsmState, state::AbstractHsmState)
+
+Change the active state of `state_machine`, following the active state of
 `state` as much as one layer.
+
+This is the interface to use in a state's event handler (`on_event!()`) to 
+transition to the history of a state.
+
+```julia
+struct Machine <: HSM.AbstractHsmState ; end
+struct MyState <: HSM.AbstractHsmState ; end
+struct MyOtherState <: HSM.AbstractHsmState ; end
+struct MySubState1 <: HSM.AbstractHsmState ; end
+struct MySubState2 <: HSM.AbstractHsmEvent ; end
+struct MyEvent <: HSM.AbstractHsmEvent ; end
+
+machine = Machine(nothing)
+my_state = MyState(machine)
+my_other_state = MyOtherState(machine)
+my_sub_state_1 = MySubState1(my_other_state)
+my_sub_state_2 = MySubState2(my_other_state)
+
+function on_event!(state::MyState, event::MyEvent)
+    # Will transition to last active state in my_other_state -- my_other_state,
+    # my_sub_state_1, or my_sub_state_2.
+    transition_to_shallow_history!(machine, my_other_state)
+end
+```
+
+This interface corresponds to an arrow to a history marker in a state.
+
+```plantuml
+@startuml
+state Machine {
+    state MyState
+    state MyOtherState {
+        state MySubState1
+        state MySubState2
+    }
+
+    MyState --> MyStateWithHistory[H]
+}
+@enduml
+```
 """
 function transition_to_shallow_history!(machine::AbstractHsmState, state::AbstractHsmState)
     @debug "transition_to_shallow_history!($(string(typeof(machine))), $(string(typeof(state))))"
@@ -209,10 +419,60 @@ function transition_to_shallow_history!(machine::AbstractHsmState, state::Abstra
 end
 
 """
-Change the active state of the state machine, following the `active_state` of
+    transition_to_deep_history(machine::AbstractHsmState, state::AbstractHsmState)
+
+Change the active state of `state_machine`, following the active state of
 `state` as far as it goes.
+
+This is the interface to use in a state's event handler (`on_event!()`) to 
+transition to the deep history of a state.
+
+```julia
+struct Machine <: HSM.AbstractHsmState ; end
+struct MyState <: HSM.AbstractHsmState ; end
+struct MyOtherState <: HSM.AbstractHsmState ; end
+struct MySubState1 <: HSM.AbstractHsmState ; end
+struct MySubState2 <: HSM.AbstractHsmEvent ; end
+struct MySubSubState1 <: HSM.AbstractHsmEvent ; end
+struct MySubSubState2 <: HSM.AbstractHsmEvent ; end
+struct MyEvent <: HSM.AbstractHsmEvent ; end
+
+machine = Machine(nothing)
+my_state = MyState(machine)
+my_other_state = MyOtherState(machine)
+my_sub_state_1 = MySubState1(my_other_state)
+my_sub_state_2 = MySubState2(my_other_state)
+my_sub_sub-state_1 = MySubSubState1(my_sub_state_1)
+my_sub_sub-state_2 = MySubSubState2(my_sub_state_1)
+
+function on_event!(state::MyState, event::MyEvent)
+    # Will transition last active state in my_other_state -- my_other_state,
+    # my_sub_state_1, my_sub-state_2, my_sub_sub_state_1, or my_sub_sub_state_2.
+    transition_to_shallow_history!(machine, my_other_state)
+end
+```
+This interface corresponds to an arrow to a deep history marker in a state.
+
+```plantuml
+@startuml
+state Machine {
+    state MyState
+    state MyOtherState {
+        state MySubState1 {
+            state MySubSubState1
+            state MySubSubState2
+        }
+        state MySubState2
+    }
+
+    MyState --> MyOtherState[H*]
+}
+@enduml
+```
 """
 function transition_to_deep_history!(machine::AbstractHsmState, state::AbstractHsmState)
+    @debug "transition_to_deep_history!($(string(typeof(machine))), $(string(typeof(state))))"
+
     s = state
     while !isnothing(s.active_state)
         s = s.active_state
