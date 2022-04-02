@@ -3,7 +3,8 @@
 Heirarchical State Machine (HSM) library for complex, stateful, event-driven 
 applications written in Julia.
 
-HSM comes from the Unified Modeling Language (UML).
+HSM is based on Unified Modeling Language (UML) state machines (also called
+statecharts).
 
 ## Example
 

@@ -112,7 +112,7 @@ labels in state blocks in UML state charts.
 
 ```plantuml
 @startuml
-state ExampleMachine {
+state Machine {
     state MyState
     MyState : on entry / do something
 }
@@ -148,7 +148,7 @@ labels in state blocks in UML state charts.
 
 ```plantuml
 @startuml
-state ExampleMachine {
+state Machine {
     state MyState
     MyState : on exit / do something
 }
@@ -164,7 +164,7 @@ function on_exit!(state::AbstractHsmState)
 end
 
 """
-    on_initialize!(state::AbstractHsmEvent)
+    on_initialize!(state::AbstractHsmState)
 
 Global state initializer.
 
@@ -173,10 +173,13 @@ this is used when a state has sub-states, where one must be transitioned to
 when the state is entered. For example, the root state machine.
 
 ```julia
-struct ExampleMachine <: HSM.AbstractHsmState ; end
+struct Machine <: HSM.AbstractHsmState ; end
 struct MyState <: HSM.AbstractHsmState ; end
 
-function on_initialize!(state::ExampleMachine)
+machine = Machine(nothing)
+my_state = MyState(machine)
+
+function on_initialize!(state::Machine)
     transition_to_state!(my_state)
 end
 ```
@@ -324,10 +327,10 @@ state Machine {
 @enduml
 ```
 """
-function transition_to_state!(machine::AbstractHsmState, state::AbstractHsmState)
+function transition_to_state!(state_machine::AbstractHsmState, state::AbstractHsmState)
     @debug "transition_to_state!($(string(typeof(machine))), $(string(typeof(state))))"
     
-    s = active_state(machine)
+    s = active_state(state_machine)
     cp = common_parent(s, state)
 
     if isnothing(cp)
@@ -336,7 +339,7 @@ function transition_to_state!(machine::AbstractHsmState, state::AbstractHsmState
                 "Destination state " * 
                 string(typeof(state)) * 
                 " does not exist in state machine " * 
-                string(typeof(machine))
+                string(typeof(state_machine))
             )
         )
     end
@@ -366,7 +369,7 @@ function transition_to_state!(machine::AbstractHsmState, state::AbstractHsmState
 end
 
 """
-    transition_to_shallow_history(machine::AbstractHsmState, state::AbstractHsmState)
+    transition_to_shallow_history(state_machine::AbstractHsmState, state::AbstractHsmState)
 
 Change the active state of `state_machine`, following the active state of
 `state` as much as one layer.
@@ -411,15 +414,15 @@ state Machine {
 @enduml
 ```
 """
-function transition_to_shallow_history!(machine::AbstractHsmState, state::AbstractHsmState)
-    @debug "transition_to_shallow_history!($(string(typeof(machine))), $(string(typeof(state))))"
+function transition_to_shallow_history!(state_machine::AbstractHsmState, state::AbstractHsmState)
+    @debug "transition_to_shallow_history!($(string(typeof(state_machine))), $(string(typeof(state))))"
 
     s = isnothing(state.active_state) ? state : state.active_state
-    transition_to_state!(machine, s)
+    transition_to_state!(state_machine, s)
 end
 
 """
-    transition_to_deep_history(machine::AbstractHsmState, state::AbstractHsmState)
+    transition_to_deep_history(state_machine::AbstractHsmState, state::AbstractHsmState)
 
 Change the active state of `state_machine`, following the active state of
 `state` as far as it goes.
@@ -470,12 +473,12 @@ state Machine {
 @enduml
 ```
 """
-function transition_to_deep_history!(machine::AbstractHsmState, state::AbstractHsmState)
-    @debug "transition_to_deep_history!($(string(typeof(machine))), $(string(typeof(state))))"
+function transition_to_deep_history!(state_machine::AbstractHsmState, state::AbstractHsmState)
+    @debug "transition_to_deep_history!($(string(typeof(state_machine))), $(string(typeof(state))))"
 
     s = state
     while !isnothing(s.active_state)
         s = s.active_state
     end
-    transition_to_state!(machine, s)
+    transition_to_state!(state_machine, s)
 end
