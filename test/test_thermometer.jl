@@ -13,16 +13,16 @@ state ThermometerStateMachine {
         CelsiusState {
             on entry / set converter to celsius.
         }
-        FarenheitState {
-            on entry / set converter to farenheit.
+        FahrenheitState {
+            on entry / set converter to fahrenheit.
         }
         KelvinState {
             on entry / set converter to kelvin.
         }
 
         [*] --> CelsiusState
-        CelsiusState -> FarenheitState : UnitsEvent
-        FarenheitState -> KelvinState : UnitsEvent
+        CelsiusState -> FahrenheitState : UnitsEvent
+        FahrenheitState -> KelvinState : UnitsEvent
         KelvinState -> CelsiusState : UnitsEvent
     }
 
@@ -40,7 +40,7 @@ using Logging, Test, HSM
 #####
 
 celsius(t::Float64) = string(round(t, digits=1)) * "°C"
-farenheit(t::Float64) = string(round((t * 1.8) + 32.0, digits=1)) * "°F"
+fahrenheit(t::Float64) = string(round((t * 1.8) + 32.0, digits=1)) * "°F"
 kelvin(t::Float64) = string(round(t + 273.15, digits=1)) * "K"
 
 #####
@@ -91,14 +91,14 @@ end
 @thermometer_state(OffState)
 @thermometer_state(OnState)
 @thermometer_state(CelsiusState)
-@thermometer_state(FarenheitState)
+@thermometer_state(FahrenheitState)
 @thermometer_state(KelvinState)
 
 thermometer_state_machine = ThermometerStateMachine(nothing, nothing, thermometer)
 off_state = OffState(thermometer_state_machine, nothing, thermometer)
 on_state = OnState(thermometer_state_machine, nothing, thermometer)
 celsius_state = CelsiusState(on_state, nothing, thermometer)
-farenheit_state = FarenheitState(on_state, nothing, thermometer)
+fahrenheit_state = FahrenheitState(on_state, nothing, thermometer)
 kelvin_state = KelvinState(on_state, nothing, thermometer)
 
 # Root state machine state event handlers.
@@ -176,22 +176,22 @@ end
 
 function HSM.on_event!(state::CelsiusState, event::UnitsEvent)
     @debug "on_event!(CelsiusState, UnitsEvent)"
-    HSM.transition_to_state!(thermometer_state_machine, farenheit_state)
+    HSM.transition_to_state!(thermometer_state_machine, fahrenheit_state)
     return true
 end
 
-# Farenheit state event handlers.
+# Fahrenheit state event handlers.
 
-function HSM.on_entry!(state::FarenheitState)
-    @debug "on_entry!(FarenheitState)"
-    state.thermometer.convert = farenheit
+function HSM.on_entry!(state::FahrenheitState)
+    @debug "on_entry!(FahrenheitState)"
+    state.thermometer.convert = fahrenheit
     if !isnothing(state.thermometer.temperature)
         state.thermometer.display = state.thermometer.convert(state.thermometer.temperature)
     end
 end
 
-function HSM.on_event!(state::FarenheitState, event::UnitsEvent)
-    @debug "on_event!(FarenheitState, UnitsEvent)"
+function HSM.on_event!(state::FahrenheitState, event::UnitsEvent)
+    @debug "on_event!(FahrenheitState, UnitsEvent)"
     HSM.transition_to_state!(thermometer_state_machine, kelvin_state)
     return true
 end
@@ -247,7 +247,7 @@ end
     # Test units event.
     HSM.handle_event!(thermometer_state_machine, UnitsEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == farenheit_state
+    @test HSM.active_state(thermometer_state_machine) == fahrenheit_state
     @test thermometer.display == "--"
 
     HSM.handle_event!(thermometer_state_machine, UnitsEvent())
@@ -266,7 +266,7 @@ end
 
     HSM.handle_event!(thermometer_state_machine, UnitsEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == farenheit_state
+    @test HSM.active_state(thermometer_state_machine) == fahrenheit_state
     @test thermometer.display == "32.0°F"
 
     HSM.handle_event!(thermometer_state_machine, PowerEvent())
@@ -278,6 +278,6 @@ end
 @testset "On - Off - On retains memory" begin
     HSM.handle_event!(thermometer_state_machine, PowerEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == farenheit_state
+    @test HSM.active_state(thermometer_state_machine) == fahrenheit_state
     @test thermometer.display == "32.0°F"
 end
