@@ -3,31 +3,26 @@ Thermometer state machine:
 
 @startuml
 state ThermometerStateMachine {
-    state OffState {
-        on entry / set display to "off".
-    }
+    state OffState 
     state OnState {
-        on entry / set display to "--".
-        TemperatureEvent : set display to converted temperature value.
-
-        CelsiusState {
-            on entry / set converter to celsius.
-        }
-        FahrenheitState {
-            on entry / set converter to fahrenheit.
-        }
-        KelvinState {
-            on entry / set converter to kelvin.
-        }
+        state CelsiusState 
+        state FahrenheitState 
+        state KelvinState 
 
         [*] --> CelsiusState
+        CelsiusState : on entry / set converter to celsius.
         CelsiusState -> FahrenheitState : UnitsEvent
+        FahrenheitState: on entry / set converter to fahrenheit.
         FahrenheitState -> KelvinState : UnitsEvent
+        KelvinState : on entry / set converter to kelvin.
         KelvinState -> CelsiusState : UnitsEvent
     }
 
     [*] --> OffState
+    Offstate : on entry / set display to "off".
     OffState -> OnState : PowerEvent
+    OnState : on entry / set display to "on".
+    OnState : TemperatureEvent / set display to converted temperature value.
     OnState -> OffState : PowerEvent
 }
 @enduml

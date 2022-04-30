@@ -409,7 +409,7 @@ state Machine {
         state MySubState2
     }
 
-    MyState --> MyStateWithHistory[H]
+    MyState --> MyOtherState[H]
 }
 @enduml
 ```
