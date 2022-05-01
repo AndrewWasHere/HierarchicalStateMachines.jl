@@ -3,8 +3,8 @@ module HSM
 include("heirarchical_state_machine.jl")
 
 # Types
-export AbstractHsmEvent, AbstractHsmState, HsmStateTransitionError, 
-    HsmUnhandledEventError
+export AbstractHsmEvent, AbstractHsmState, HsmStateInfo, 
+    HsmStateTransitionError, HsmUnhandledEventError
 
 # Interfaces
 export handle_event!, transition_to_deep_history!, 

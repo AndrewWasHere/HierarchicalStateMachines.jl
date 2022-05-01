@@ -10,22 +10,10 @@ end
 Handle Event tests state machine.
 """
 mutable struct TestUnhandledEventMachine <: HSM.AbstractHsmState
-    parent_state::Union{HSM.AbstractHsmState, Nothing}
-    active_state::Union{HSM.AbstractHsmState, Nothing}
+    state_info::HSM.HsmStateInfo
     handled_event::Bool
     
-    function TestUnhandledEventMachine(
-        parent_state, 
-        active_state=nothing, 
-        handled_event=false
-    )
-        if !isnothing(active_state) 
-            error("active_state must be `nothing`.")
-        elseif handled_event
-            error("handled_event must be `false`.")
-        end
-        new(parent_state, active_state, handled_event)
-    end
+    TestUnhandledEventMachine(parent_state) = new(HSM.HsmStateInfo(parent_state), false)
 end
 
 # TestUnhandledEventMachineState event handlers.
@@ -49,5 +37,4 @@ end
     # Handled event should not throw an error and set `handled_event`.
     HSM.handle_event!(machine, HandledEvent())
     @test machine.handled_event
-    
 end

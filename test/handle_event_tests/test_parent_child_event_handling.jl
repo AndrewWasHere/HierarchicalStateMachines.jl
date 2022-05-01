@@ -3,13 +3,12 @@ State machine used for these tests:
 
 @startuml
 state TestParentChildEventHandlingMachine {
-    ChildHandledEvent / set handled_child_handled_event
-    ChildUnhandledEvent / set handled_child_unhandled_event
-
-    state TestParentChildEventHandlingChild {
-        ChildHandledEvent / set handled_child_handled_event
-    }
+    state TestParentChildEventHandlingChild 
+    TestParentChildEventHandlingChild : ChildHandledEvent / set handled_child_handled_event
 }
+
+TestParentChildEventHandlingMachine : ChildHandledEvent / set handled_child_handled_event
+TestParentChildEventHandlingMachine : ChildUnhandledEvent / set_handled_child_unhandled_event
 @enduml
 """
 
@@ -24,31 +23,11 @@ end
 macro test_parent_child_event_state(name)
     return :(
         mutable struct $name <: HSM.AbstractHsmState
-            parent_state::Union{HSM.AbstractHsmState, Nothing}
-            active_state::Union{HSM.AbstractHsmState, Nothing}
+            state_info::HSM.HsmStateInfo
             handled_child_handled_event::Bool
             handled_child_unhandled_event::Bool
 
-            function $name(
-                parent_state, 
-                active_state=nothing, 
-                handled_child_handled_event=false, 
-                handled_child_unhandled_event=false
-            )
-                if !isnothing(active_state)
-                    error("active_state must be `nothing`")
-                elseif handled_child_handled_event
-                    error("handled_child_handled_event must be `false`")
-                elseif handled_child_unhandled_event
-                    error("handled_child_unhandled_event must be `false`")
-                end
-                new(
-                    parent_state, 
-                    active_state, 
-                    handled_child_handled_event, 
-                    handled_child_unhandled_event
-                )
-            end
+            $name(parent_state) = new(HSM.HsmStateInfo(parent_state), false, false)
         end
     )
 end
@@ -96,5 +75,4 @@ end
     @test machine.handled_child_unhandled_event == true
     @test child.handled_child_handled_event == false
     @test child.handled_child_unhandled_event == false
-    
 end

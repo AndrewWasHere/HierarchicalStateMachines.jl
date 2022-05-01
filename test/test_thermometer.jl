@@ -74,10 +74,11 @@ end
 
 macro thermometer_state(name)
     return :(
-        mutable struct $name <: HSM.AbstractHsmState
-            parent_state::Union{HSM.AbstractHsmState, Nothing}
-            active_state::Union{HSM.AbstractHsmState, Nothing}
+        struct $name <: HSM.AbstractHsmState
+            state_info::HSM.HsmStateInfo
             thermometer::Thermometer
+
+            $name(parent, thermometer) = new(HSM.HsmStateInfo(parent), thermometer)
         end
     )
 end
@@ -89,12 +90,12 @@ end
 @thermometer_state(FahrenheitState)
 @thermometer_state(KelvinState)
 
-thermometer_state_machine = ThermometerStateMachine(nothing, nothing, thermometer)
-off_state = OffState(thermometer_state_machine, nothing, thermometer)
-on_state = OnState(thermometer_state_machine, nothing, thermometer)
-celsius_state = CelsiusState(on_state, nothing, thermometer)
-fahrenheit_state = FahrenheitState(on_state, nothing, thermometer)
-kelvin_state = KelvinState(on_state, nothing, thermometer)
+thermometer_state_machine = ThermometerStateMachine(nothing, thermometer)
+off_state = OffState(thermometer_state_machine, thermometer)
+on_state = OnState(thermometer_state_machine, thermometer)
+celsius_state = CelsiusState(on_state, thermometer)
+fahrenheit_state = FahrenheitState(on_state, thermometer)
+kelvin_state = KelvinState(on_state, thermometer)
 
 # Root state machine state event handlers.
 # The root state machine state must handle all possible user-defined events --

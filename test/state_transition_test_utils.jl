@@ -2,16 +2,10 @@ using Logging
 
 macro transition_tests_state(name)
     return :(
-        mutable struct $name <: HSM.AbstractHsmState
-            parent_state::Union{HSM.AbstractHsmState, Nothing}
-            active_state::Union{HSM.AbstractHsmState, Nothing}
+        struct $name <: HSM.AbstractHsmState
+            state_info::HSM.HsmStateInfo
 
-            function $name(parent_state, active_state=nothing)
-                if !isnothing(active_state)
-                    error("active_state must be `nothing`")
-                end
-                new(parent_state, active_state)
-            end
+            $name(parent_state) = new(HSM.HsmStateInfo(parent_state))
         end
     )
 end

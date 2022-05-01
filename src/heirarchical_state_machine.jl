@@ -34,13 +34,48 @@ abstract type AbstractHsmEvent end
 
 Abstract HSM state type.
 
-Concrete states must be mutable, inherit `AbstractHsmState`, and contain
+Concrete states must inherit `AbstractHsmState`, and contain an HsmStateInfo 
+struct called `state_info`. Pass the parent state to the HsmStateInfo 
+constructor in the concrete state's constructor.
+
+Example:
+
+```julia
+struct MyState <: AbstractHsmState
+    state_info::HsmStateInfo
+    app_info::MyStatefulApplicationInfo
+
+    MyState(parent_state, app_info) = new(HSM.HsmStateInfo(parent_state), app_info)
+end
+```
+"""
+abstract type AbstractHsmState end
+
+"""
+    HsmStateInfo
+
+State information needed by HSM interfaces that act on `AbstractHsmState`s.
 
 * `parent_state::AbstractHsmState` -- initialized to the parent state of the
     concrete state, or `nothing` if it is the root state machine state.
 * `active_state::AbstractHsmState` -- initialized to `nothing`.
 """
-abstract type AbstractHsmState end
+mutable struct HsmStateInfo
+    parent_state::Union{AbstractHsmState, Nothing}
+    active_state::Union{AbstractHsmState, Nothing}
+
+    """
+        HsmStateInfo(parent_state::Union{AbstractHsmState, Nothing})
+
+    Constructor for HsmStateInfo.
+
+    `parent_state` argument is the state containing the current state, or 
+    `nothing`, if the state is the root state machine.
+    """
+    function HsmStateInfo(parent_state)
+        new(parent_state, nothing)
+    end
+end
 
 #####
 # Global Handlers
@@ -211,16 +246,16 @@ end
 
 function root_state(current_state::AbstractHsmState)
     s = current_state
-    while !isnothing(s.parent_state)
-        s = s.parent_state
+    while !isnothing(s.state_info.parent_state)
+        s = s.state_info.parent_state
     end
     return s
 end
 
 function active_state(current_state::AbstractHsmState)
     s = root_state(current_state)
-    while !isnothing(s.active_state)
-        s = s.active_state
+    while !isnothing(s.state_info.active_state)
+        s = s.state_info.active_state
     end
     return s
 end
@@ -232,8 +267,8 @@ function common_parent(left_state::AbstractHsmState, right_state::AbstractHsmSta
 
     if (
         left_state == right_state &&
-        isnothing(left_state.parent_state) &&
-        isnothing(right_state.parent_state)
+        isnothing(left_state.state_info.parent_state) &&
+        isnothing(right_state.state_info.parent_state)
     )
         # `left_state` and `right_state` are the root machine state.
         return left_state
@@ -248,10 +283,10 @@ function common_parent(left_state::AbstractHsmState, right_state::AbstractHsmSta
                 return r
             end
 
-            r = r.parent_state
+            r = r.state_info.parent_state
         end
 
-        l = l.parent_state
+        l = l.state_info.parent_state
     end
 
     # No common parent.
@@ -278,7 +313,7 @@ function handle_event!(state_machine::AbstractHsmState, event::AbstractHsmEvent)
     s = active_state(state_machine)
     while !isnothing(s) && !(handled = on_event!(s, event))
         # Event not handled by current state. Try the parent.
-        s = s.parent_state
+        s = s.state_info.parent_state
     end
 
     if !handled 
@@ -345,24 +380,24 @@ function transition_to_state!(state_machine::AbstractHsmState, state::AbstractHs
     end
 
     # Call `on_exit()` from active state to common parent.
-    while s != cp.parent_state
+    while s != cp.state_info.parent_state
         on_exit!(s)
-        s = s.parent_state
+        s = s.state_info.parent_state
     end
 
     # Update active state pointers from common parent to `state`.
-    state.active_state = nothing
+    state.state_info.active_state = nothing
     s = state
     while s != cp
-        s.parent_state.active_state = s
-        s = s.parent_state
+        s.state_info.parent_state.state_info.active_state = s
+        s = s.state_info.parent_state
     end
 
     # Call `on_entry()` for common parent's active state to `state`.
-    s = cp.active_state
+    s = cp.state_info.active_state
     while !isnothing(s)
         on_entry!(s)
-        s = s.active_state
+        s = s.state_info.active_state
     end
 
     on_initialize!(state)
@@ -417,7 +452,7 @@ state Machine {
 function transition_to_shallow_history!(state_machine::AbstractHsmState, state::AbstractHsmState)
     @debug "transition_to_shallow_history!($(string(typeof(state_machine))), $(string(typeof(state))))"
 
-    s = isnothing(state.active_state) ? state : state.active_state
+    s = isnothing(state.state_info.active_state) ? state : state.state_info.active_state
     transition_to_state!(state_machine, s)
 end
 
@@ -477,8 +512,8 @@ function transition_to_deep_history!(state_machine::AbstractHsmState, state::Abs
     @debug "transition_to_deep_history!($(string(typeof(state_machine))), $(string(typeof(state))))"
 
     s = state
-    while !isnothing(s.active_state)
-        s = s.active_state
+    while !isnothing(s.state_info.active_state)
+        s = s.state_info.active_state
     end
     transition_to_state!(state_machine, s)
 end

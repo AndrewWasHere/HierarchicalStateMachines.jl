@@ -1,9 +1,9 @@
 # HSM.jl
 
-Heirarchical state macine library based on Unified Modeling Language state
-machines (also called statecharts).
+Hierarchical state machine library based on Unified Modeling Language state
+machines (also called state charts).
 
-Heirarchcial state machines allow for the use of sub-states within states.
+Hierarchical state machines allow for the use of sub-states within states.
 This can reduce boilerplate actions in similar states by encapsulating those
 states in a parent state, and moving the boilerplate action to the parent state.
 
@@ -25,25 +25,54 @@ Pkg.add(url="https://github.com/AndrewWasHere/HSM.jl.git")
 ## Use
 
 The general procedure for implementing a state machine using HSM is to create
-a `mutable struct` derived from `AbstractHsmState` for every state in the state 
-machine, as well as the state machine itself. Each derived struct must contain,
-at a minimum, `parent_state::AbstractHsmState` and 
-`active_state::AbstractHsmState`. Generally speaking, there will also be a
-reference to a container holding process data to be acted upon.
+a (possibly mutable) `struct` derived from `AbstractHsmState` for every state in 
+the state machine, as well as the state machine itself. Each derived struct must 
+contain, at a minimum, `state_info::HSM.HsmStateInfo`. Generally speaking, there 
+will also be a reference to a container holding process data to be acted upon.
 
-For every event handled by the state machine, create a `struct` derived from 
-`AbstractHsmEvent`. There are no required fields for the stuct derived from
-`AbstractHsmEvent`.
+For every user-defined event handled by the state machine, create a `struct` 
+derived from `AbstractHsmEvent`. There are no required fields for the struct 
+derived from `AbstractHsmEvent`.
 
 Instantiate one instance of each state. Top-level states pass the state machine
-instance as the `parent_state` argument to its constructor. Sub-states pass
-their parent state instance as the `parent_state` argument to its constructor.
-The root state machine state passes `nothing` as the parent state.
+instance as the `parent_state` argument to its contained `state_info`. 
+Sub-states pass their parent state instance as the `parent_state`. The root 
+state machine state passes `nothing` as the parent state.
+
+For example, to create a state machine called `MyStateMachine` that contains
+two states `FooState` and `BarState`, you would define three concrete 
+derivations of `AbstractHsmState` containing a minimum of a `state_info` field.
+Their constructors would take a `parent_state` argument that got passed to the
+`HsmStateInfo` constructor for `state_info`.
+
+```julia
+struct MyStateMachine <: HSM.AbstractHsmState
+    state_info::HSM.HsmStateInfo
+
+    MyStateMachine(parent) = new(HSM.HsmStateInfo(parent))
+end
+
+struct FooState <: HSM.AbstractHsmState
+    state_info::HSM.HsmStateInfo
+
+    FooState(parent) = new(HSM.HsmStateInfo(parent))
+end
+
+struct BarState <: HSM.AbstractHsmState
+    state_info::HSM.HsmStateInfo
+
+    BarState(parent) = new(HSM.HsmStateInfo(parent))
+end
+
+my_state_machine = MyStateMachine(nothing)
+foo_state = FooState(my_state_machine)
+bar_state = BarState(my_state_machine)
+```
 
 Extend `on_event!()` to handle specific events in specific states. Similarly, 
 extend `on_entry!()`, `on_exit!()`, and `on_initialize!()` as necessary. Be sure 
-the root state machine state handles all expected events, and returns `true` in 
-each `on_event!()` extension.
+event handlers for the root state machine state handle all expected events, and 
+return `true` in each `on_event!()` extension.
 
 Use `transition_to_state!()`, `transition_to_shallow_history!()`, and
 `transition_to_deep_history!()` in your event handlers to effect state
