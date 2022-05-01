@@ -7,6 +7,7 @@ The following abstract types are used to derive concrete state and event types.
 ```@docs
 AbstractHsmEvent
 AbstractHsmState
+HsmStateInfo
 ```
 
 ## Public Interfaces
