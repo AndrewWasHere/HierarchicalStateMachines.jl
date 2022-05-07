@@ -3,10 +3,10 @@ State machine for these tests:
 
 @startuml
 state TransitionTestsMachine {
-    state TransitionTestsStateStart as Start {}
-    state TransitionTestsStateDest as Dest {}
+    state Start
+    state Dest
 }
-state TransitionTestsStateUnreachable as Unreachable {}
+state Unreachable
 @enduml
 """
 
@@ -35,7 +35,7 @@ end
 @testset "transition_to_state!() -- Target state in state machine" begin
     machine, start_state, dest_state, unreachable_state = build_state_machine()
     HSM.transition_to_state!(machine, dest_state)
-    @test HSM.active_state(machine) == dest_state
+    @test HSM.machine_active_state(machine) == dest_state
 end
 
 #
@@ -44,5 +44,5 @@ end
 @testset "transition_to_state!() -- Target state not in state machine" begin
     machine, start_state, dest_state, unreachable_state = build_state_machine()
     @test_throws HSM.HsmStateTransitionError HSM.transition_to_state!(machine, unreachable_state)
-    @test HSM.active_state(machine) == start_state
+    @test HSM.machine_active_state(machine) == start_state
 end

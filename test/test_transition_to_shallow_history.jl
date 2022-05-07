@@ -3,10 +3,10 @@ State machine for these tests:
 
 @startuml
 state TestShallowHistoryMachine {
-    state TestShallowHistoryStartState {}
+    state TestShallowHistoryStartState
     state TestShallowHistoryL1State {
         state TestShallowHistoryL2State {
-            state TestShallowHistoryL3State {}
+            state TestShallowHistoryL3State
         }
     }
 }
@@ -41,7 +41,7 @@ end
 @testset "transition_to_shallow_history!() -- start -shallow-> l1 => l1" begin
     machine, start_state, l1_state, l2_state, l3_state = build_shallow_history_machine()
     HSM.transition_to_shallow_history!(machine, l1_state)
-    @test HSM.active_state(machine) == l1_state
+    @test HSM.machine_active_state(machine) == l1_state
 end
 
 #
@@ -53,5 +53,5 @@ end
     HSM.transition_to_state!(machine, l3_state)
     HSM.transition_to_state!(machine, start_state)
     HSM.transition_to_shallow_history!(machine, l1_state)
-    @test HSM.active_state(machine) == l2_state
+    @test HSM.machine_active_state(machine) == l2_state
 end

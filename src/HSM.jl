@@ -13,4 +13,7 @@ export handle_event!, transition_to_deep_history!,
 # Extendable Interfaces
 export on_entry!, on_event!, on_exit!, on_initialize!
 
+# Getters and setters
+export active_state, active_state!, parent_state, parent_state!
+
 end # module

@@ -34,9 +34,12 @@ abstract type AbstractHsmEvent end
 
 Abstract HSM state type.
 
-Concrete states must inherit `AbstractHsmState`, and contain an HsmStateInfo 
-struct called `state_info`. Pass the parent state to the HsmStateInfo 
-constructor in the concrete state's constructor.
+Concrete states must inherit `AbstractHsmState`, and either contain an 
+`HsmStateInfo`  struct called `state_info`, or implement the `parent_state()`, 
+`parent_state!()`, `active_state()`, and `active_state!()` getters and setters. 
+
+Pass the parent state to the HsmStateInfo constructor in the concrete state's 
+constructor if using `HsmStateInfo`.
 
 Example:
 
@@ -48,8 +51,59 @@ struct MyState <: AbstractHsmState
     MyState(parent_state, app_info) = new(HSM.HsmStateInfo(parent_state), app_info)
 end
 ```
+
+Otherwise, call `parent_state(obj, <parent state>)` and 
+`active_state(obj, nothing)` when constructing your concrete state.
 """
 abstract type AbstractHsmState end
+
+"""
+    parent_state(obj::AbstractHsmState)
+
+parent_state getter. 
+
+Extend this for your concrete class if your concrete struct does not include 
+`state_info::HsmStateInfo`.
+"""
+function parent_state(obj::AbstractHsmState)
+    obj.state_info.parent_state
+end
+
+"""
+    parent_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
+
+parent_state setter.
+
+Extend this for your concrete class if your concrete struct does not include 
+`state_info::HsmStateInfo`.
+"""
+function parent_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
+    obj.state_info.parent_state = value
+end
+
+"""
+    active_state(obj::AbstracHsmState)
+
+active_state getter.
+
+Extend this for your concrete class if your concrete struct does not include 
+`state_info::HsmStateInfo`.
+"""
+function active_state(obj::AbstractHsmState)
+    obj.state_info.active_state
+end
+
+"""
+    active_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
+
+active_state setter.
+
+Extend this for your concrete class if your concrete struct does not include 
+`state_info::HsmStateInfo`.
+"""
+function active_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
+    obj.state_info.active_state = value
+end
 
 """
     HsmStateInfo
@@ -246,16 +300,16 @@ end
 
 function root_state(current_state::AbstractHsmState)
     s = current_state
-    while !isnothing(s.state_info.parent_state)
-        s = s.state_info.parent_state
+    while !isnothing(parent_state(s))
+        s = parent_state(s)
     end
     return s
 end
 
-function active_state(current_state::AbstractHsmState)
+function machine_active_state(current_state::AbstractHsmState)
     s = root_state(current_state)
-    while !isnothing(s.state_info.active_state)
-        s = s.state_info.active_state
+    while !isnothing(active_state(s))
+        s = active_state(s)
     end
     return s
 end
@@ -267,8 +321,8 @@ function common_parent(left_state::AbstractHsmState, right_state::AbstractHsmSta
 
     if (
         left_state == right_state &&
-        isnothing(left_state.state_info.parent_state) &&
-        isnothing(right_state.state_info.parent_state)
+        isnothing(parent_state(left_state)) &&
+        isnothing(parent_state(right_state))
     )
         # `left_state` and `right_state` are the root machine state.
         return left_state
@@ -283,10 +337,10 @@ function common_parent(left_state::AbstractHsmState, right_state::AbstractHsmSta
                 return r
             end
 
-            r = r.state_info.parent_state
+            r = parent_state(r)
         end
 
-        l = l.state_info.parent_state
+        l = parent_state(l)
     end
 
     # No common parent.
@@ -310,10 +364,10 @@ function handle_event!(state_machine::AbstractHsmState, event::AbstractHsmEvent)
     
     handled = false
 
-    s = active_state(state_machine)
+    s = machine_active_state(state_machine)
     while !isnothing(s) && !(handled = on_event!(s, event))
         # Event not handled by current state. Try the parent.
-        s = s.state_info.parent_state
+        s = parent_state(s)
     end
 
     if !handled 
@@ -365,7 +419,7 @@ state Machine {
 function transition_to_state!(state_machine::AbstractHsmState, state::AbstractHsmState)
     @debug "transition_to_state!($(string(typeof(machine))), $(string(typeof(state))))"
     
-    s = active_state(state_machine)
+    s = machine_active_state(state_machine)
     cp = common_parent(s, state)
 
     if isnothing(cp)
@@ -380,24 +434,24 @@ function transition_to_state!(state_machine::AbstractHsmState, state::AbstractHs
     end
 
     # Call `on_exit()` from active state to common parent.
-    while s != cp.state_info.parent_state
+    while s != parent_state(cp)
         on_exit!(s)
-        s = s.state_info.parent_state
+        s = parent_state(s)
     end
 
     # Update active state pointers from common parent to `state`.
-    state.state_info.active_state = nothing
+    active_state!(state, nothing)
     s = state
     while s != cp
-        s.state_info.parent_state.state_info.active_state = s
-        s = s.state_info.parent_state
+        active_state!(parent_state(s), s)
+        s = parent_state(s)
     end
 
     # Call `on_entry()` for common parent's active state to `state`.
-    s = cp.state_info.active_state
+    s = active_state(cp)
     while !isnothing(s)
         on_entry!(s)
-        s = s.state_info.active_state
+        s = active_state(s)
     end
 
     on_initialize!(state)
@@ -452,7 +506,8 @@ state Machine {
 function transition_to_shallow_history!(state_machine::AbstractHsmState, state::AbstractHsmState)
     @debug "transition_to_shallow_history!($(string(typeof(state_machine))), $(string(typeof(state))))"
 
-    s = isnothing(state.state_info.active_state) ? state : state.state_info.active_state
+    as = active_state(state)
+    s = isnothing(as) ? state : as
     transition_to_state!(state_machine, s)
 end
 
@@ -512,8 +567,8 @@ function transition_to_deep_history!(state_machine::AbstractHsmState, state::Abs
     @debug "transition_to_deep_history!($(string(typeof(state_machine))), $(string(typeof(state))))"
 
     s = state
-    while !isnothing(s.state_info.active_state)
-        s = s.state_info.active_state
+    while !isnothing(active_state(s))
+        s = active_state(s)
     end
     transition_to_state!(state_machine, s)
 end

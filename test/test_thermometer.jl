@@ -216,7 +216,7 @@ end
     # Initialize the state machine.
     HSM.transition_to_state!(thermometer_state_machine, thermometer_state_machine)
 
-    @test HSM.active_state(thermometer_state_machine) == off_state
+    @test HSM.machine_active_state(thermometer_state_machine) == off_state
     @test thermometer.display == "off"
 end
 
@@ -224,18 +224,18 @@ end
     # Test ignored events.
     HSM.handle_event!(thermometer_state_machine, UnitsEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == off_state
+    @test HSM.machine_active_state(thermometer_state_machine) == off_state
     @test thermometer.display == "off"
 
     HSM.handle_event!(thermometer_state_machine, TemperatureEvent(10.0))
 
-    @test HSM.active_state(thermometer_state_machine) == off_state
+    @test HSM.machine_active_state(thermometer_state_machine) == off_state
     @test thermometer.display == "off"
 
     # Test power event.
     HSM.handle_event!(thermometer_state_machine, PowerEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == celsius_state
+    @test HSM.machine_active_state(thermometer_state_machine) == celsius_state
     @test thermometer.display == "--"
 end
 
@@ -243,12 +243,12 @@ end
     # Test units event.
     HSM.handle_event!(thermometer_state_machine, UnitsEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == fahrenheit_state
+    @test HSM.machine_active_state(thermometer_state_machine) == fahrenheit_state
     @test thermometer.display == "--"
 
     HSM.handle_event!(thermometer_state_machine, UnitsEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == kelvin_state
+    @test HSM.machine_active_state(thermometer_state_machine) == kelvin_state
     @test thermometer.display == "--"
 
     HSM.handle_event!(thermometer_state_machine, TemperatureEvent(0.0))
@@ -257,23 +257,23 @@ end
 
     HSM.handle_event!(thermometer_state_machine, UnitsEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == celsius_state
+    @test HSM.machine_active_state(thermometer_state_machine) == celsius_state
     @test thermometer.display == "0.0°C"
 
     HSM.handle_event!(thermometer_state_machine, UnitsEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == fahrenheit_state
+    @test HSM.machine_active_state(thermometer_state_machine) == fahrenheit_state
     @test thermometer.display == "32.0°F"
 
     HSM.handle_event!(thermometer_state_machine, PowerEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == off_state
+    @test HSM.machine_active_state(thermometer_state_machine) == off_state
     @test thermometer.display == "off"
 end
 
 @testset "On - Off - On retains memory" begin
     HSM.handle_event!(thermometer_state_machine, PowerEvent())
 
-    @test HSM.active_state(thermometer_state_machine) == fahrenheit_state
+    @test HSM.machine_active_state(thermometer_state_machine) == fahrenheit_state
     @test thermometer.display == "32.0°F"
 end

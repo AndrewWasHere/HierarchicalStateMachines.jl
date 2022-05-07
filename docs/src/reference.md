@@ -33,6 +33,20 @@ on_exit!(state::AbstractHsmState)
 on_initialize!(state::AbstractHsmState)
 ```
 
+## Extendable Getters and Setters
+
+The following getters and setters are extended to implement the required parent
+and active state requirements for concrete implementations of 
+`AbstractHsmState`. Extending the getters and setters is only necessary if
+the concrete implementation does not have a `state_info::HsmStateInfo` member.
+
+```@docs
+active_state(obj::AbstractHsmState)
+active_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
+parent_state(obj::AbstractHsmState)
+parent_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
+```
+
 ## Exceptions
 
 The following exceptions are defined and used by HSM.
