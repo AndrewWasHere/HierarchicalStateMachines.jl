@@ -14,6 +14,6 @@ export handle_event!, transition_to_deep_history!,
 export on_entry!, on_event!, on_exit!, on_initialize!
 
 # Getters and setters
-export active_state, active_state!, parent_state, parent_state!
+export active_substate, active_substate!, parent_state, parent_state!
 
 end # module

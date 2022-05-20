@@ -4,7 +4,8 @@ using Logging
 Unhandled event exception.
 
 This gets thrown if an event is not handled by the state machine when
-`handle_event!()` is called.
+`handle_event!()` is called. This usually means the root state machine state
+does not have an event handler for the event type, or is not returning `true`.
 """
 struct HsmUnhandledEventError <: Exception
     msg::String
@@ -375,7 +376,7 @@ function handle_event!(state_machine::AbstractHsmState, event::AbstractHsmEvent)
         # least, your root state machine does not have handlers for all possible
         # events.
         throw(
-            HsmUnhandledEventError("Unhandled Event: $(string(typeof(event)))")
+            HsmUnhandledEventError("Unhandled Event: $(string(typeof(event))). Does your root state machine have an event handler (`on_event!()`) for this event?")
         )
     end
 end

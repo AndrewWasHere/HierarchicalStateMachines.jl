@@ -1,10 +1,13 @@
 # HSM.jl
 
-Heirarchical State Machine (HSM) library for complex, stateful, event-driven 
+[![docs-dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://andrewwashere.github.io/HSM.jl/dev)
+
+Hierarchical State Machine (HSM) library for complex, stateful, event-driven 
 applications written in Julia.
 
 HSM is based on Unified Modeling Language (UML) state machines (also called
-statecharts).
+state charts).
+
 
 ## Example
 
@@ -21,4 +24,3 @@ Copyright 2022, Andrew Lin. All rights reserved.
 
 This library is licensed under the MIT License. See LICENSE.txt or
 https://opensource.org/licenses/MIT.
-

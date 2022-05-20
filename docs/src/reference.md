@@ -41,8 +41,8 @@ and active state requirements for concrete implementations of
 the concrete implementation does not have a `state_info::HsmStateInfo` member.
 
 ```@docs
-active_state(obj::AbstractHsmState)
-active_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
+active_substate(obj::AbstractHsmState)
+active_substate!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
 parent_state(obj::AbstractHsmState)
 parent_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
 ```
