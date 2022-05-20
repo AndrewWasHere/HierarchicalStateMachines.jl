@@ -11,3 +11,6 @@ makedocs(
         "reference.md"
     ]
 )
+deploydocs(
+    repo = "github.com/AndrewWasHere/HSM.jl.git",
+)
