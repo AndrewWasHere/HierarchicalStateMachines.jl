@@ -36,7 +36,7 @@ Abstract HSM state type.
 
 Concrete states must inherit `AbstractHsmState`, and either contain an 
 `HsmStateInfo`  struct called `state_info`, or implement the `parent_state()`, 
-`parent_state!()`, `active_state()`, and `active_state!()` getters and setters. 
+`parent_state!()`, `active_substate()`, and `active_substate!()` getters and setters. 
 
 Pass the parent state to the HsmStateInfo constructor in the concrete state's 
 constructor if using `HsmStateInfo`.
@@ -53,7 +53,7 @@ end
 ```
 
 Otherwise, call `parent_state(obj, <parent state>)` and 
-`active_state(obj, nothing)` when constructing your concrete state.
+`active_substate(obj, nothing)` when constructing your concrete state.
 """
 abstract type AbstractHsmState end
 
@@ -82,27 +82,27 @@ function parent_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Not
 end
 
 """
-    active_state(obj::AbstracHsmState)
+    active_substate(obj::AbstracHsmState)
 
-active_state getter.
+active_substate getter.
 
 Extend this for your concrete class if your concrete struct does not include 
 `state_info::HsmStateInfo`.
 """
-function active_state(obj::AbstractHsmState)
-    obj.state_info.active_state
+function active_substate(obj::AbstractHsmState)
+    obj.state_info.active_substate
 end
 
 """
-    active_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
+    active_substate!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
 
-active_state setter.
+active_substate setter.
 
 Extend this for your concrete class if your concrete struct does not include 
 `state_info::HsmStateInfo`.
 """
-function active_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
-    obj.state_info.active_state = value
+function active_substate!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
+    obj.state_info.active_substate = value
 end
 
 """
@@ -112,11 +112,11 @@ State information needed by HSM interfaces that act on `AbstractHsmState`s.
 
 * `parent_state::AbstractHsmState` -- initialized to the parent state of the
     concrete state, or `nothing` if it is the root state machine state.
-* `active_state::AbstractHsmState` -- initialized to `nothing`.
+* `active_substate::AbstractHsmState` -- initialized to `nothing`.
 """
 mutable struct HsmStateInfo
     parent_state::Union{AbstractHsmState, Nothing}
-    active_state::Union{AbstractHsmState, Nothing}
+    active_substate::Union{AbstractHsmState, Nothing}
 
     """
         HsmStateInfo(parent_state::Union{AbstractHsmState, Nothing})
@@ -306,10 +306,10 @@ function root_state(current_state::AbstractHsmState)
     return s
 end
 
-function machine_active_state(current_state::AbstractHsmState)
+function active_state(current_state::AbstractHsmState)
     s = root_state(current_state)
-    while !isnothing(active_state(s))
-        s = active_state(s)
+    while !isnothing(active_substate(s))
+        s = active_substate(s)
     end
     return s
 end
@@ -364,7 +364,7 @@ function handle_event!(state_machine::AbstractHsmState, event::AbstractHsmEvent)
     
     handled = false
 
-    s = machine_active_state(state_machine)
+    s = active_state(state_machine)
     while !isnothing(s) && !(handled = on_event!(s, event))
         # Event not handled by current state. Try the parent.
         s = parent_state(s)
@@ -374,7 +374,9 @@ function handle_event!(state_machine::AbstractHsmState, event::AbstractHsmEvent)
         # Unhandled event. This is a really good indicator that, at the very
         # least, your root state machine does not have handlers for all possible
         # events.
-        throw(HsmUnhandledEventError("Unhandled Event: " * string(event)))
+        throw(
+            HsmUnhandledEventError("Unhandled Event: $(string(typeof(event)))")
+        )
     end
 end
 
@@ -419,7 +421,7 @@ state Machine {
 function transition_to_state!(state_machine::AbstractHsmState, state::AbstractHsmState)
     @debug "transition_to_state!($(string(typeof(machine))), $(string(typeof(state))))"
     
-    s = machine_active_state(state_machine)
+    s = active_state(state_machine)
     cp = common_parent(s, state)
 
     if isnothing(cp)
@@ -440,25 +442,25 @@ function transition_to_state!(state_machine::AbstractHsmState, state::AbstractHs
     end
 
     # Update active state pointers from common parent to `state`.
-    active_state!(state, nothing)
+    active_substate!(state, nothing)
     s = state
     while s != cp
-        active_state!(parent_state(s), s)
+        active_substate!(parent_state(s), s)
         s = parent_state(s)
     end
 
     # Call `on_entry()` for common parent's active state to `state`.
-    s = active_state(cp)
+    s = active_substate(cp)
     while !isnothing(s)
         on_entry!(s)
-        s = active_state(s)
+        s = active_substate(s)
     end
 
     on_initialize!(state)
 end
 
 """
-    transition_to_shallow_history(state_machine::AbstractHsmState, state::AbstractHsmState)
+    transition_to_shallow_history!(state_machine::AbstractHsmState, state::AbstractHsmState)
 
 Change the active state of `state_machine`, following the active state of
 `state` as much as one layer.
@@ -506,7 +508,7 @@ state Machine {
 function transition_to_shallow_history!(state_machine::AbstractHsmState, state::AbstractHsmState)
     @debug "transition_to_shallow_history!($(string(typeof(state_machine))), $(string(typeof(state))))"
 
-    as = active_state(state)
+    as = active_substate(state)
     s = isnothing(as) ? state : as
     transition_to_state!(state_machine, s)
 end
@@ -567,8 +569,8 @@ function transition_to_deep_history!(state_machine::AbstractHsmState, state::Abs
     @debug "transition_to_deep_history!($(string(typeof(state_machine))), $(string(typeof(state))))"
 
     s = state
-    while !isnothing(active_state(s))
-        s = active_state(s)
+    while !isnothing(active_substate(s))
+        s = active_substate(s)
     end
     transition_to_state!(state_machine, s)
 end

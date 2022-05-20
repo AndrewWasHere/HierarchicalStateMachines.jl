@@ -10,13 +10,13 @@ end
     info = HSM.HsmStateInfo(nothing)
     @test !isnothing(info)
     @test isnothing(info.parent_state)
-    @test isnothing(info.active_state)
+    @test isnothing(info.active_substate)
 
     something = HsmStateInfoState()
     info = HSM.HsmStateInfo(something)
     @test !isnothing(info)
     @test info.parent_state == something
-    @test isnothing(info.active_state)
+    @test isnothing(info.active_substate)
 
     # Test multiple-argument constructor does not exist.
     @test_throws MethodError HSM.HsmStateInfo(nothing, nothing)

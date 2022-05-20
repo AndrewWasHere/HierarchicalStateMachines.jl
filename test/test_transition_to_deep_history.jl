@@ -41,7 +41,7 @@ end
 @testset "transition_to_deep_history!() -- start -deep-> l1 => l1" begin
     machine, start_state, l1_state, l2_state, l3_state = build_deep_history_machine()
     HSM.transition_to_deep_history!(machine, l1_state)
-    @test HSM.machine_active_state(machine) == l1_state
+    @test HSM.active_state(machine) == l1_state
 end
 
 #
@@ -53,5 +53,5 @@ end
     HSM.transition_to_state!(machine, l3_state)
     HSM.transition_to_state!(machine, start_state)
     HSM.transition_to_deep_history!(machine, l1_state)
-    @test HSM.machine_active_state(machine) == l3_state
+    @test HSM.active_state(machine) == l3_state
 end
