@@ -177,7 +177,7 @@ The global event handler is called as a last resort, and is expected to return
 `false` to generate an `HsmUnhandledEventError`.
 """
 function on_event!(state::AbstractHsmState, event::AbstractHsmEvent)
-    @debug "on_event!(AbstractHsmState, AbstractHsmEvent)"
+    @debug "on_event!(AbstractHsmState, AbstractHsmEvent) for ($(string(typeof(state))), $(string(typeof(event))))"
     return false
 end
 
@@ -213,7 +213,7 @@ The global state entry handler is the default behavior of a state. It does not
 do anything.
 """
 function on_entry!(state::AbstractHsmState)
-    @debug "on_entry!(AbstractHsmState)"
+    @debug "on_entry!(AbstractHsmState) for $(string(typeof(state)))"
     # do nothing.
 end
 
@@ -249,7 +249,7 @@ The global state exit handler is the default behavior of a state. It does not do
 anything.
 """
 function on_exit!(state::AbstractHsmState)
-    @debug "on_exit!(AbstractHsmState)"
+    @debug "on_exit!(AbstractHsmState) for $(string(typeof(state)))"
     # do nothing.
 end
 
@@ -291,7 +291,7 @@ The global state initializer is the default behavior of a state. It does not do
 anything.
 """
 function on_initialize!(state::AbstractHsmState)
-    @debug "on_initialize!(AbstractHsmState)"
+    @debug "on_initialize!(AbstractHsmState) for $(string(typeof(state)))"
     # Do nothing.
 end
 
@@ -420,7 +420,7 @@ state Machine {
 ```
 """
 function transition_to_state!(state_machine::AbstractHsmState, state::AbstractHsmState)
-    @debug "transition_to_state!($(string(typeof(machine))), $(string(typeof(state))))"
+    @debug "transition_to_state!($(string(typeof(state_machine))), $(string(typeof(state))))"
     
     s = active_state(state_machine)
     cp = common_parent(s, state)
@@ -436,8 +436,9 @@ function transition_to_state!(state_machine::AbstractHsmState, state::AbstractHs
         )
     end
 
-    # Call `on_exit()` from active state to common parent.
-    while s != parent_state(cp)
+    # Call `on_exit!()` from active state up to, but not including common 
+    # parent.
+    while s != cp
         on_exit!(s)
         s = parent_state(s)
     end
@@ -450,7 +451,7 @@ function transition_to_state!(state_machine::AbstractHsmState, state::AbstractHs
         s = parent_state(s)
     end
 
-    # Call `on_entry()` for common parent's active state to `state`.
+    # Call `on_entry!()` for common parent's active state to `state`.
     s = active_substate(cp)
     while !isnothing(s)
         on_entry!(s)

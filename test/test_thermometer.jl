@@ -104,7 +104,7 @@ kelvin_state = KelvinState(on_state, thermometer)
 # UnhandledExceptionErrors being thrown.
 
 function HSM.on_initialize!(state::ThermometerStateMachine)
-    @debug "on_initialize(ThermometerStateMachine)"
+    @debug "on_initialize!(ThermometerStateMachine)"
     HSM.transition_to_state!(thermometer_state_machine, off_state)
 end
 
@@ -126,13 +126,13 @@ end
 # Off state event handlers.
 
 function HSM.on_entry!(state::OffState)
-    @debug "on_entry(OffState)"
+    @debug "on_entry!(OffState)"
     state.thermometer.display = "off"
     state.thermometer.temperature = nothing
 end
 
 function HSM.on_event!(state::OffState, event::PowerEvent)
-    @debug "on_event(OffState, PowerEvent)"
+    @debug "on_event!(OffState, PowerEvent)"
     HSM.transition_to_deep_history!(thermometer_state_machine, on_state)
     return true
 end

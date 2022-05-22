@@ -1,6 +1,6 @@
 module HSM
 
-include("heirarchical_state_machine.jl")
+include("hierarchical_state_machine.jl")
 
 # Types
 export AbstractHsmEvent, AbstractHsmState, HsmStateInfo, 
