@@ -26,7 +26,7 @@ end
 
 Abstract HSM event type.
 
-Concrete events must inherit `AbstractHsmEvent`.
+Concrete events must extend `AbstractHsmEvent`.
 """
 abstract type AbstractHsmEvent end
 
@@ -35,9 +35,10 @@ abstract type AbstractHsmEvent end
 
 Abstract HSM state type.
 
-Concrete states must inherit `AbstractHsmState`, and either contain an 
+Concrete states must extend `AbstractHsmState`, and either contain an 
 `HsmStateInfo`  struct called `state_info`, or implement the `parent_state()`, 
-`parent_state!()`, `active_substate()`, and `active_substate!()` getters and setters. 
+`parent_state!()`, `active_substate()`, and `active_substate!()` getters and 
+setters. 
 
 Pass the parent state to the HsmStateInfo constructor in the concrete state's 
 constructor if using `HsmStateInfo`.
@@ -186,8 +187,8 @@ end
 
 Global state entry handler.
 
-Create entry handlers for your derived states when you want that state to execute
-something whenever it is entered. This includes transitions to itself.
+Create entry handlers for your derived states when you want that state to 
+execute something whenever it is entered. This includes transitions to itself.
 
 ```julia
 struct MyState <: HSM.AbstractHsmState ; end
@@ -258,7 +259,7 @@ end
 
 Global state initializer.
 
-Create initialiers for states that must be initialized upon entry. Generally,
+Create initializers for states that must be initialized upon entry. Generally,
 this is used when a state has sub-states, where one must be transitioned to
 when the state is entered. For example, the root state machine.
 
@@ -299,6 +300,31 @@ end
 # Internals
 #####
 
+"""
+    root_state(current_state::AbstractHsmState)
+
+Returns the root state of `current_state`.
+
+Follows the state's parent state up, until there is no more parent state.
+
+Example:
+
+Given the following state machine:
+
+```plantuml
+@startuml
+state A {
+    state B
+    state C {
+        state D
+        state E
+    }
+}
+@enduml
+```
+
+The root state of any state in the state machine is `A`.
+"""
 function root_state(current_state::AbstractHsmState)
     s = current_state
     while !isnothing(parent_state(s))
@@ -307,6 +333,30 @@ function root_state(current_state::AbstractHsmState)
     return s
 end
 
+"""
+    active_state(current_state::AbstractHsmState)
+
+Returns the active state of the state machine that `current_state` resides in.
+
+Example:
+
+Given the following state machine:
+
+```plantuml
+@startuml
+state A {
+    state B
+    state C {
+        state D
+        state E
+    }
+}
+@enduml
+
+If state `B` is the last state transitioned to, then the active state for any
+state in the state machine will be `B`.
+```
+"""
 function active_state(current_state::AbstractHsmState)
     s = root_state(current_state)
     while !isnothing(active_substate(s))
@@ -315,20 +365,39 @@ function active_state(current_state::AbstractHsmState)
     return s
 end
 
-function common_parent(left_state::AbstractHsmState, right_state::AbstractHsmState)
-    if isnothing(left_state) || isnothing(right_state)
-        return nothing
-    end
+"""
+    common_parent(left_state::AbstractHsmState, right_state::AbstractHsmState)
 
-    if (
-        left_state == right_state &&
-        isnothing(parent_state(left_state)) &&
-        isnothing(parent_state(right_state))
-    )
-        # `left_state` and `right_state` are the root machine state.
-        return left_state
-    end
+Returns the common parent of `left_state` and `right_state`.
 
+Example:
+
+Given the following state machine:
+
+```plantuml
+@startuml
+state A {
+    state B
+    state C {
+        state D
+        state E
+    }
+}
+@enduml
+```
+
+The common parent of `A` and any other state is `A`.
+
+The common parent of `B` and any other state is `A`.
+
+The common parent of `C` and any of its substates is `C`.
+
+The common parent of `D` and `E` is `C`.
+"""
+function common_parent(
+    left_state::AbstractHsmState, 
+    right_state::AbstractHsmState
+)
     l = left_state
     while !isnothing(l)
         r = right_state
@@ -419,7 +488,10 @@ state Machine {
 @enduml
 ```
 """
-function transition_to_state!(state_machine::AbstractHsmState, state::AbstractHsmState)
+function transition_to_state!(
+    state_machine::AbstractHsmState, 
+    state::AbstractHsmState
+)
     @debug "transition_to_state!($(string(typeof(state_machine))), $(string(typeof(state))))"
     
     s = active_state(state_machine)
@@ -507,7 +579,10 @@ state Machine {
 @enduml
 ```
 """
-function transition_to_shallow_history!(state_machine::AbstractHsmState, state::AbstractHsmState)
+function transition_to_shallow_history!(
+    state_machine::AbstractHsmState, 
+    state::AbstractHsmState
+)
     @debug "transition_to_shallow_history!($(string(typeof(state_machine))), $(string(typeof(state))))"
 
     as = active_substate(state)
@@ -516,7 +591,7 @@ function transition_to_shallow_history!(state_machine::AbstractHsmState, state::
 end
 
 """
-    transition_to_deep_history(state_machine::AbstractHsmState, state::AbstractHsmState)
+    transition_to_deep_history!(state_machine::AbstractHsmState, state::AbstractHsmState)
 
 Change the active state of `state_machine`, following the active state of
 `state` as far as it goes.
@@ -548,6 +623,7 @@ function on_event!(state::MyState, event::MyEvent)
     transition_to_shallow_history!(machine, my_other_state)
 end
 ```
+
 This interface corresponds to an arrow to a deep history marker in a state.
 
 ```plantuml
@@ -567,7 +643,10 @@ state Machine {
 @enduml
 ```
 """
-function transition_to_deep_history!(state_machine::AbstractHsmState, state::AbstractHsmState)
+function transition_to_deep_history!(
+    state_machine::AbstractHsmState, 
+    state::AbstractHsmState
+)
     @debug "transition_to_deep_history!($(string(typeof(state_machine))), $(string(typeof(state))))"
 
     s = state
