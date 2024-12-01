@@ -9,7 +9,8 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "reference.md"
-    ]
+    ],
+    checkdocs=:exports
 )
 deploydocs(
     repo = "github.com/AndrewWasHere/HSM.jl.git",
