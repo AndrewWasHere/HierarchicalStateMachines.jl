@@ -12,14 +12,7 @@ states in a parent state, and moving the boilerplate action to the parent state.
 You can obtain HSM using Julia's Package Manager REPL.
 
 ```julia
-pkg> add https://github.com/AndrewWasHere/HSM.jl.git
-```
-
-Or directly from the Julia REPL.
-
-```julia
-using Pkg
-Pkg.add(url="https://github.com/AndrewWasHere/HSM.jl.git")
+pkg> add HSM
 ```
 
 ## Use
