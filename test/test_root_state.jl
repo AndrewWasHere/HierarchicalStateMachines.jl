@@ -1,4 +1,5 @@
-using Logging, Test, HSM
+using Logging, Test
+import HierarchicalStateMachines as HSM
 
 struct RootStateTestState <: HSM.AbstractHsmState
     state_info::HSM.HsmStateInfo

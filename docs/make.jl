@@ -1,10 +1,10 @@
 push!(LOAD_PATH, "../src/")
 
-using Documenter, HSM
+using Documenter, HierarchicalStateMachines
 
 makedocs(
-    modules = [HSM],
-    sitename=  "HSM.jl",
+    modules = [HierarchicalStateMachines],
+    sitename=  "HierarchicalStateMachines.jl",
     authors = "Andrew Lin",
     pages = [
         "Home" => "index.md",

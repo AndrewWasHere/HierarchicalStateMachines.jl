@@ -12,7 +12,8 @@ HsmStateInfo
 
 ## Public Interfaces
 
-The following HSM interfaces are used in state machine implementations.
+The following HierarchicalStateMachines interfaces are used in state machine 
+implementations.
 
 ```@docs
 handle_event!(state_machine::AbstractHsmState, event::AbstractHsmEvent)
@@ -49,7 +50,7 @@ parent_state!(obj::AbstractHsmState, value::Union{AbstractHsmState, Nothing})
 
 ## Exceptions
 
-The following exceptions are defined and used by HSM.
+The following exceptions are defined and used by HierarchicalStateMachines.
 
 ```@docs
 HsmUnhandledEventError

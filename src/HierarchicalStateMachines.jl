@@ -1,4 +1,4 @@
-module HSM
+module HierarchicalStateMachines
 
 include("hierarchical_state_machine.jl")
 

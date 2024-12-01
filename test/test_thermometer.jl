@@ -29,7 +29,8 @@ state ThermometerStateMachine {
 @enduml
 """
 
-using Logging, Test, HSM
+using Logging, Test
+import HierarchicalStateMachines as HSM
 
 #####
 # Temperature converter functions.

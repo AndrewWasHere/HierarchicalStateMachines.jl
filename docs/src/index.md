@@ -1,4 +1,4 @@
-# HSM.jl
+# HierarchicalStateMachines.jl
 
 Hierarchical state machine library based on Unified Modeling Language state
 machines (also called state charts).
@@ -9,18 +9,19 @@ states in a parent state, and moving the boilerplate action to the parent state.
 
 ## Installation
 
-You can obtain HSM using Julia's Package Manager REPL.
+You can obtain HierarchicalStateMachines using Julia's Package Manager REPL.
 
 ```julia
-pkg> add HSM
+pkg> add HierarchicalStateMachine
 ```
 
 ## Use
 
-The general procedure for implementing a state machine using HSM is to create
-a (possibly mutable) `struct` derived from `AbstractHsmState` for every state in 
-the state machine, as well as the state machine itself. Each derived struct must 
-contain, at a minimum, `state_info::HSM.HsmStateInfo`. Generally speaking, there 
+The general procedure for implementing a state machine using 
+HierarchicalStateMachines is to create a (possibly mutable) `struct` derived 
+from `AbstractHsmState` for every state in the state machine, as well as the 
+state machine itself. Each derived struct must contain, at a minimum, 
+`state_info::HierarchicalStateMachines.HsmStateInfo`. Generally speaking, there 
 will also be a reference to a container holding process data to be acted upon.
 
 For every user-defined event handled by the state machine, create a `struct` 
@@ -39,22 +40,22 @@ Their constructors would take a `parent_state` argument that got passed to the
 `HsmStateInfo` constructor for `state_info`.
 
 ```julia
-struct MyStateMachine <: HSM.AbstractHsmState
-    state_info::HSM.HsmStateInfo
+struct MyStateMachine <: AbstractHsmState
+    state_info::HsmStateInfo
 
-    MyStateMachine(parent) = new(HSM.HsmStateInfo(parent))
+    MyStateMachine(parent) = new(HsmStateInfo(parent))
 end
 
-struct FooState <: HSM.AbstractHsmState
-    state_info::HSM.HsmStateInfo
+struct FooState <: AbstractHsmState
+    state_info:HsmStateInfo
 
-    FooState(parent) = new(HSM.HsmStateInfo(parent))
+    FooState(parent) = new(HsmStateInfo(parent))
 end
 
-struct BarState <: HSM.AbstractHsmState
-    state_info::HSM.HsmStateInfo
+struct BarState <: AbstractHsmState
+    state_info::HsmStateInfo
 
-    BarState(parent) = new(HSM.HsmStateInfo(parent))
+    BarState(parent) = new(HsmStateInfo(parent))
 end
 
 my_state_machine = MyStateMachine(nothing)

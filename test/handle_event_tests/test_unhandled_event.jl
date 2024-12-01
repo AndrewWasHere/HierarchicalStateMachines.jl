@@ -1,4 +1,5 @@
-using Logging, Test, HSM
+using Logging, Test
+import HierarchicalStateMachines as HSM
 
 struct HandledEvent <: HSM.AbstractHsmEvent
 end

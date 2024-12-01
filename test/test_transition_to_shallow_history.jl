@@ -13,7 +13,8 @@ state TestShallowHistoryMachine {
 @enduml
 """
 
-using Logging, Test, HSM
+using Logging, Test
+import HierarchicalStateMachines as HSM
 include("state_transition_test_utils.jl")
 
 @transition_tests_state TestShallowHistoryMachine

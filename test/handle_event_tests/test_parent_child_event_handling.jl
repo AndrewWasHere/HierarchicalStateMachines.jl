@@ -12,7 +12,8 @@ TestParentChildEventHandlingMachine : ChildUnhandledEvent / set_handled_child_un
 @enduml
 """
 
-using Logging, Test, HSM
+using Logging, Test
+import HierarchicalStateMachines as HSM
 
 struct ChildHandledEvent <: HSM.AbstractHsmEvent
 end

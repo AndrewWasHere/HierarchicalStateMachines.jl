@@ -1,4 +1,5 @@
-using Logging, Test, HSM
+using Logging, Test
+import HierarchicalStateMachines as HSM
 
 struct HsmStateInfoState <: HSM.AbstractHsmState
     # Actual contents are not necessary for tests, so they're left out for 

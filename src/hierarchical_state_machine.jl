@@ -50,7 +50,7 @@ struct MyState <: AbstractHsmState
     state_info::HsmStateInfo
     app_info::MyStatefulApplicationInfo
 
-    MyState(parent_state, app_info) = new(HSM.HsmStateInfo(parent_state), app_info)
+    MyState(parent_state, app_info) = new(HsmStateInfo(parent_state), app_info)
 end
 ```
 
@@ -146,8 +146,8 @@ Create event handlers for your derived states and events to handle those
 specific events in those states.
 
 ```julia
-struct MyState <: HSM.AbstractHsmState ; end
-struct MyEvent <: HSM.AbstractHsmEvent ; end
+struct MyState <: AbstractHsmState ; end
+struct MyEvent <: AbstractHsmEvent ; end
 
 function on_event!(state::MyState, event::MyEvent)
     # process event.
@@ -191,7 +191,7 @@ Create entry handlers for your derived states when you want that state to
 execute something whenever it is entered. This includes transitions to itself.
 
 ```julia
-struct MyState <: HSM.AbstractHsmState ; end
+struct MyState <: AbstractHsmState ; end
 
 function on_entry!(state::MyState)
     # do something.
@@ -227,7 +227,7 @@ Create exit handlers for your derived states when you want that state to execute
 something whenever it is exited. This includes transitions to itself.
 
 ```julia
-struct MyState <: HSM.AbstractHsmState ; end
+struct MyState <: AbstractHsmState ; end
 
 function on_exit!(state::MyState)
     # do something.
@@ -264,8 +264,8 @@ this is used when a state has sub-states, where one must be transitioned to
 when the state is entered. For example, the root state machine.
 
 ```julia
-struct Machine <: HSM.AbstractHsmState ; end
-struct MyState <: HSM.AbstractHsmState ; end
+struct Machine <: AbstractHsmState ; end
+struct MyState <: AbstractHsmState ; end
 
 machine = Machine(nothing)
 my_state = MyState(machine)
@@ -459,10 +459,10 @@ This is the interface to use in a state's event handler (`on_event!()`,
 `on_initialize()`) to transition states.
 
 ```julia
-struct Machine <: HSM.AbstractHsmState ; end
-struct MyState <: HSM.AbstractHsmState ; end
-struct MyOtherState <: HSM.AbstractHsmState ; end
-struct MyEvent <: HSM.AbstractHsmEvent ; end
+struct Machine <: AbstractHsmState ; end
+struct MyState <: AbstractHsmState ; end
+struct MyOtherState <: AbstractHsmState ; end
+struct MyEvent <: AbstractHsmEvent ; end
 
 machine = Machine(nothing)
 my_state = MyState(machine)
@@ -543,12 +543,12 @@ This is the interface to use in a state's event handler (`on_event!()`) to
 transition to the history of a state.
 
 ```julia
-struct Machine <: HSM.AbstractHsmState ; end
-struct MyState <: HSM.AbstractHsmState ; end
-struct MyOtherState <: HSM.AbstractHsmState ; end
-struct MySubState1 <: HSM.AbstractHsmState ; end
-struct MySubState2 <: HSM.AbstractHsmEvent ; end
-struct MyEvent <: HSM.AbstractHsmEvent ; end
+struct Machine <: AbstractHsmState ; end
+struct MyState <: AbstractHsmState ; end
+struct MyOtherState <: AbstractHsmState ; end
+struct MySubState1 <: AbstractHsmState ; end
+struct MySubState2 <: AbstractHsmEvent ; end
+struct MyEvent <: AbstractHsmEvent ; end
 
 machine = Machine(nothing)
 my_state = MyState(machine)
@@ -600,14 +600,14 @@ This is the interface to use in a state's event handler (`on_event!()`) to
 transition to the deep history of a state.
 
 ```julia
-struct Machine <: HSM.AbstractHsmState ; end
-struct MyState <: HSM.AbstractHsmState ; end
-struct MyOtherState <: HSM.AbstractHsmState ; end
-struct MySubState1 <: HSM.AbstractHsmState ; end
-struct MySubState2 <: HSM.AbstractHsmEvent ; end
-struct MySubSubState1 <: HSM.AbstractHsmEvent ; end
-struct MySubSubState2 <: HSM.AbstractHsmEvent ; end
-struct MyEvent <: HSM.AbstractHsmEvent ; end
+struct Machine <: AbstractHsmState ; end
+struct MyState <: AbstractHsmState ; end
+struct MyOtherState <: AbstractHsmState ; end
+struct MySubState1 <: AbstractHsmState ; end
+struct MySubState2 <: AbstractHsmEvent ; end
+struct MySubSubState1 <: AbstractHsmEvent ; end
+struct MySubSubState2 <: AbstractHsmEvent ; end
+struct MyEvent <: AbstractHsmEvent ; end
 
 machine = Machine(nothing)
 my_state = MyState(machine)

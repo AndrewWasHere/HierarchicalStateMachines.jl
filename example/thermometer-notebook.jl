@@ -17,7 +17,7 @@ end
 # ╔═╡ 1c401a52-6574-4d9f-8e98-e0e2fa4617b7
 begin
 	push!(LOAD_PATH, "../src")
-	using HSM
+	import HierarchicalStateMachines as HSM
 end
 
 # ╔═╡ ce91ee9e-f3a9-4b4b-9110-7647f388600f

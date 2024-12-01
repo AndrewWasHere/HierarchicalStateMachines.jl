@@ -1,4 +1,4 @@
-# HSM.jl
+# HierarchicalStateMachines.jl
 
 [![docs-dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://andrewwashere.github.io/HSM.jl/dev)
 [![Tests](https://github.com/AndrewWasHere/HSM.jl/actions/workflows/tests.yml/badge.svg)](https://github.com/AndrewWasHere/HSM.jl/actions/workflows/tests.yml)
@@ -12,8 +12,9 @@ state charts).
 ## Examples
 
 `test/test_temperature.jl` is a sample state machine demonstrating how to use
-HSM.jl. To see a graphical representation of the thermometer state machine
-described in the file's docstring, pass it through [PlantUML](https://plantuml.com).
+HierarchicalStateMachines.jl. To see a graphical representation of the 
+thermometer state machine described in the file's docstring, pass it through 
+[PlantUML](https://plantuml.com).
 
 Unlike `test_temperature.jl`, you will probably want to slap an event queue in 
 front of your state machine.
@@ -29,8 +30,8 @@ for an in-depth explanation of how this library works.
 ## Honorable Mentions
 
 Thanks to [G Gundam](https://github.com/g-gundam) for encouraging me to 
-actually publish HSM.jl on JuliaHub, the proofreading, and the pull
-requests.
+actually publish HierarchicalStateMachines.jl on JuliaHub, the proofreading, and 
+the pull requests.
 
 ## License
 
