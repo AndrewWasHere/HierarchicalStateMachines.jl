@@ -22,6 +22,9 @@ front of your state machine.
 a Pluto notebook. It will show the state transitions and HSM function calls when
 handling events.
 
+Finally, check out my blog post titled **[State Machines and Their Implementation (in Julia)](https://andrewwashere.github.io/2022/05/21/state-machines.html)**
+for an in-depth explanation of how this library works.
+
 ## License
 
 Copyright 2022, Andrew Lin. All rights reserved.
