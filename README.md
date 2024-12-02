@@ -1,6 +1,6 @@
 # HierarchicalStateMachines.jl
 
-[![docs-dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://andrewwashere.github.io/HSM.jl/dev)
+[![docs-dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://andrewwashere.github.io/HierarchicalStateMachines.jl/dev)
 [![Tests](https://github.com/AndrewWasHere/HSM.jl/actions/workflows/tests.yml/badge.svg)](https://github.com/AndrewWasHere/HSM.jl/actions/workflows/tests.yml)
 
 Hierarchical State Machine (HSM) library for complex, stateful, event-driven 
