@@ -1,7 +1,10 @@
 name = "HierarchicalStateMachines"
 uuid = "abad772c-f3cd-4a0c-a45e-a2ff9a47795a"
 authors = ["Andrew Lin <andrew.lin@ieee.org>"]
-version = "0.1.2"
+version = "0.1.0"
+
+[compat]
+julia = "1.6"
 
 [deps]
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
