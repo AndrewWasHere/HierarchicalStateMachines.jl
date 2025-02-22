@@ -1,7 +1,7 @@
 # HierarchicalStateMachines.jl
 
 [![docs-dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://andrewwashere.github.io/HierarchicalStateMachines.jl/dev)
-[![Tests](https://github.com/AndrewWasHere/HSM.jl/actions/workflows/tests.yml/badge.svg)](https://github.com/AndrewWasHere/HSM.jl/actions/workflows/tests.yml)
+[![Tests](https://github.com/AndrewWasHere/HierarchicalStateMachines.jl/actions/workflows/tests.yml/badge.svg)](https://github.com/AndrewWasHere/HierarchicalStateMachines.jl/actions/workflows/tests.yml)
 
 Hierarchical State Machine (HSM) library for complex, stateful, event-driven 
 applications written in Julia.
@@ -35,7 +35,7 @@ the pull requests.
 
 ## License
 
-Copyright 2022 - 2024, Andrew Lin. All rights reserved.
+Copyright 2022 - 2025, Andrew Lin. All rights reserved.
 
 This library is licensed under the MIT License. See LICENSE.txt or
 https://opensource.org/licenses/MIT.
